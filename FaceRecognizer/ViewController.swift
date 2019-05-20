@@ -12,7 +12,8 @@ import ARKit
 class ViewController: UIViewController, ARSessionDelegate {
 
     var session: ARSession!
-//    var timer: Timer?
+    var timer: Timer?
+    var counter = 0
 //    var moving: Bool = false
     @IBOutlet weak var playerView: UIView!
     
@@ -28,7 +29,9 @@ class ViewController: UIViewController, ARSessionDelegate {
         session = ARSession()
         session.delegate = self
         
-        playerView.layer.cornerRadius = playerView.frame.width/2
+        playerView.layer.borderWidth = 0
+        playerView.backgroundColor = UIColor.red
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(counterProcess), userInfo: nil, repeats: true)
 
     }
     
@@ -69,7 +72,7 @@ class ViewController: UIViewController, ARSessionDelegate {
     
     func updatePlayer (state:PlayerState) {
         movePlayer(state: state)
-        print("yes")
+//        print("yes")
     }
     
     func movePlayer (state:PlayerState) {
@@ -84,11 +87,11 @@ class ViewController: UIViewController, ARSessionDelegate {
         case .neutral:
             direction = 0
         }
-        print(Int(playerView.frame.origin.y) + Int(direction))
-        if Int(playerView.frame.origin.y) + Int(direction) >= 100 && Int(playerView.frame.origin.y) + Int(direction) <= 720 {
+//        print(Int(playerView.frame.origin.y) + Int(direction))
+        if Int(playerView.frame.origin.y) + Int(direction) >= 100 && Int(playerView.frame.origin.y) + Int(direction) <= 660 {
 
 //            moving = true
-            print("yesyesyes")
+//            print("yesyesyes")
             
             UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
                 
@@ -106,11 +109,26 @@ class ViewController: UIViewController, ARSessionDelegate {
         
     }
     
+    @objc func counterProcess() {
+        
+        if self.playerView.frame.origin.y <= 129 {
+            counter += 1
+            if counter > 5 {
+                counter = 0
+            }
+            view.viewWithTag(counter)?.backgroundColor = UIColor.red
+        } else {
+            counter = 0
+        }
+        print("\(counter) second")
+        
+    }
+    
     func update(withFaceAnchor faceAnchor: ARFaceAnchor) {
         var bledShapes:[ARFaceAnchor.BlendShapeLocation:Any] = faceAnchor.blendShapes
         
         guard let browInnerUp = bledShapes[.mouthSmileLeft] as? Float else {return}
-        print(browInnerUp)
+//        print(browInnerUp)
         
         if browInnerUp > 0.5 {
             updatePlayer(state: .up)
