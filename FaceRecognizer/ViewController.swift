@@ -12,7 +12,7 @@ import ARKit
 class ViewController: UIViewController, ARSessionDelegate {
 
     var session: ARSession!
-    var moving:Bool = false
+//    var moving: Bool = false
     @IBOutlet weak var playerView: UIView!
     
     enum PlayerState:String {
@@ -26,6 +26,8 @@ class ViewController: UIViewController, ARSessionDelegate {
         // Do any additional setup after loading the view.
         session = ARSession()
         session.delegate = self
+        
+        playerView.layer.cornerRadius = playerView.frame.width/2
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -64,16 +66,14 @@ class ViewController: UIViewController, ARSessionDelegate {
     }
     
     func updatePlayer (state:PlayerState) {
-        if !moving {
-            movePlayer(state: state)
-        }
-        
+        movePlayer(state: state)
+        print("yes")
     }
     
     func movePlayer (state:PlayerState) {
 
         var direction:CGFloat = 0
-
+        
         switch state {
         case .up:
             direction = 116
@@ -82,12 +82,15 @@ class ViewController: UIViewController, ARSessionDelegate {
         case .neutral:
             direction = 0
         }
+        print(Int(playerView.frame.origin.y) + Int(direction))
+        if Int(playerView.frame.origin.y) + Int(direction) >= 0 && Int(playerView.frame.origin.y) + Int(direction) <= 896 {
 
-        if Int(playerView.frame.origin.y) + Int(direction) >= -232 && Int(playerView.frame.origin.y) + Int(direction) <= 232 {
-
+//            moving = true
+            print("yesyesyes")
+            
             UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
                 
-                self.playerView.transform = CGAffineTransform(scaleX: CGFloat(self.playerView.frame.width/2), y: CGFloat(direction))
+                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(direction))
                 
             })
             
@@ -104,9 +107,25 @@ class ViewController: UIViewController, ARSessionDelegate {
         
         if browInnerUp > 0.5 {
             updatePlayer(state: .up)
-        }else if browInnerUp < 0.15 {
+//            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
+//
+//                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(-232))
+//
+//            })
+//            if Int(playerView.frame.origin.y) + 116 >= -232 && Int(playerView.frame.origin.y) + 116 <= 232 {
+//                playerView.frame.origin.y += 116
+//            }
+        } else if browInnerUp < 0.15 {
             updatePlayer(state: .down)
-        }else {
+//            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
+//
+//                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(232))
+//
+//            })
+//                if Int(playerView.frame.origin.y) - 116 >= -232 && Int(playerView.frame.origin.y) - 116 <= 232 {
+//                    playerView.frame.origin.y -= 116
+//                }
+        } else {
             updatePlayer(state: .neutral)
         }
         
