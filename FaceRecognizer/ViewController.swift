@@ -12,6 +12,7 @@ import ARKit
 class ViewController: UIViewController, ARSessionDelegate {
 
     var session: ARSession!
+//    var timer: Timer?
 //    var moving: Bool = false
     @IBOutlet weak var playerView: UIView!
     
@@ -23,11 +24,12 @@ class ViewController: UIViewController, ARSessionDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
         session = ARSession()
         session.delegate = self
         
         playerView.layer.cornerRadius = playerView.frame.width/2
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -76,28 +78,33 @@ class ViewController: UIViewController, ARSessionDelegate {
         
         switch state {
         case .up:
-            direction = 116
+            direction = -29
         case .down:
-            direction = -116
+            direction = 29
         case .neutral:
             direction = 0
         }
         print(Int(playerView.frame.origin.y) + Int(direction))
-        if Int(playerView.frame.origin.y) + Int(direction) >= 0 && Int(playerView.frame.origin.y) + Int(direction) <= 896 {
+        if Int(playerView.frame.origin.y) + Int(direction) >= 100 && Int(playerView.frame.origin.y) + Int(direction) <= 720 {
 
 //            moving = true
             print("yesyesyes")
             
-            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
+            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
                 
-                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(direction))
+                self.playerView.frame.origin.y += direction
+                
+                if state.rawValue == "Up" {
+                    self.playerView.transform = CGAffineTransform(scaleX: 2, y: 2)
+                } else if state.rawValue == "Down" {
+                    self.playerView.transform = CGAffineTransform(scaleX: 1, y: 1)
+                }
                 
             })
             
         }
         
     }
-    
     
     func update(withFaceAnchor faceAnchor: ARFaceAnchor) {
         var bledShapes:[ARFaceAnchor.BlendShapeLocation:Any] = faceAnchor.blendShapes
@@ -107,24 +114,8 @@ class ViewController: UIViewController, ARSessionDelegate {
         
         if browInnerUp > 0.5 {
             updatePlayer(state: .up)
-//            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
-//
-//                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(-232))
-//
-//            })
-//            if Int(playerView.frame.origin.y) + 116 >= -232 && Int(playerView.frame.origin.y) + 116 <= 232 {
-//                playerView.frame.origin.y += 116
-//            }
         } else if browInnerUp < 0.15 {
             updatePlayer(state: .down)
-//            UIView.animate(withDuration: 2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.8, options: .curveEaseOut, animations: {
-//
-//                self.playerView.transform = CGAffineTransform(translationX: 0, y: CGFloat(232))
-//
-//            })
-//                if Int(playerView.frame.origin.y) - 116 >= -232 && Int(playerView.frame.origin.y) - 116 <= 232 {
-//                    playerView.frame.origin.y -= 116
-//                }
         } else {
             updatePlayer(state: .neutral)
         }
