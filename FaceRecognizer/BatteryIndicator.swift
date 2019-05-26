@@ -9,25 +9,13 @@
 import UIKit
 
 class BatteryIndicator: UIView {
-    
-    
-    //MARK: - width of positive batter terminal (will be sized to 2.5% of bounds.size.width)
-    private var terminalWidth: CGFloat = 0.0
-    
-    //MARK: - top layer is the layer used to draw the top/left outline of the battery icon
-    private let topLayer = CAShapeLayer()
-    
-    //MARK: - bottom layer is the layer used to draw the bottom/right outline of the battery icon
-    private let bottomLayer = CAShapeLayer()
-    
-    //MARK: - charge indicator shows how much battery is left
-    private let chargeIndicator = CALayer()
-    
-    private let indicatorClip = UIView()
-    private let batteryTerminal = CALayer()
-    
-    
-    //Set the battery color to update the icon outline and terminal stroke/background color
+
+    var terminalWidth: CGFloat = 0.0
+    let topLayer = CAShapeLayer()
+    let bottomLayer = CAShapeLayer()
+    let chargeIndicator = CALayer()
+    let indicatorClip = UIView()
+    let batteryTerminal = CALayer()
     var batteryColor = UIColor.black
     
     var animatedReveal = false {
@@ -41,24 +29,33 @@ class BatteryIndicator: UIView {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
                     self.reveal(layer: self.topLayer)
                     self.reveal(layer: self.bottomLayer)
+                    
                 })
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                     self.precentCharged = n
+                    
                 })
+                
             }
+            
         }
+        
     }
     
     var lineWidth: CGFloat = 2.0 {
         didSet {
             drawLayers()
+            
         }
+        
     }
     
     var cornerRadius: CGFloat = 10 {
         didSet {
             drawLayers()
+        
         }
+    
     }
     
     var healthy = UIColor.green
@@ -76,36 +73,46 @@ class BatteryIndicator: UIView {
             chargeIndicator.frame = CGRect(x: 0, y: 0, width: chargedWidth, height: bounds.size.height)
             if newValue < healthyMin && newValue >= warningMin {
                 chargeIndicator.backgroundColor = warning.cgColor
+                
             } else if newValue < warningMin && newValue > 0 {
                 chargeIndicator.backgroundColor = low.cgColor
+                
             } else if newValue == 0 {
                 chargeIndicator.backgroundColor = UIColor.clear.cgColor
+                
             } else {
                 chargeIndicator.backgroundColor = healthy.cgColor
+                
             }
+            
         }
+        
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         addLayers()
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         addLayers()
+        
     }
     
     convenience init() {
         self.init(frame: CGRect())
+        
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         drawLayers()
+        
     }
     
-    private func addLayers() {
+    func addLayers() {
         indicatorClip.clipsToBounds = true
         addSubview(indicatorClip)
         indicatorClip.layer.addSublayer(chargeIndicator)
@@ -115,9 +122,10 @@ class BatteryIndicator: UIView {
         layer.addSublayer(bottomLayer)
         style(layer: bottomLayer)
         layer.addSublayer(batteryTerminal)
+        
     }
     
-    private func drawLayers() {
+    func drawLayers() {
         let midY = bounds.size.height / 2
         terminalWidth = bounds.size.width * 0.025
         let endX = bounds.size.width - terminalWidth
@@ -135,15 +143,17 @@ class BatteryIndicator: UIView {
         //Force redraw of indicator
         let n = precentCharged
         precentCharged = n
+        
     }
     
-    private func style(layer: CAShapeLayer) {
+    func style(layer: CAShapeLayer) {
         layer.fillColor = nil
         layer.lineWidth = lineWidth
         layer.strokeColor = batteryColor.cgColor
+        
     }
     
-    private func drawTopLayer(midY: CGFloat, endX: CGFloat) {
+    func drawTopLayer(midY: CGFloat, endX: CGFloat) {
         let path = UIBezierPath()
         path.move(to: CGPoint(x: 0, y: midY))
         path.addLine(to: CGPoint(x: 0, y: cornerRadius))
@@ -153,9 +163,10 @@ class BatteryIndicator: UIView {
         path.addLine(to: CGPoint(x: endX, y: cornerRadius))
         path.addLine(to: CGPoint(x: endX, y: midY))
         topLayer.path = path.cgPath
+        
     }
     
-    private func drawBottomLayer(midY: CGFloat, endX: CGFloat) {
+    func drawBottomLayer(midY: CGFloat, endX: CGFloat) {
         let path = UIBezierPath()
         path.move(to: CGPoint(x: 0, y: midY))
         path.addLine(to: CGPoint(x: 0, y: bounds.size.height - cornerRadius))
@@ -164,9 +175,10 @@ class BatteryIndicator: UIView {
         path.addQuadCurve(to: CGPoint(x: endX, y: bounds.size.height - cornerRadius), controlPoint: CGPoint(x: endX, y: bounds.size.height))
         path.addLine(to: CGPoint(x: endX, y: midY))
         bottomLayer.path = path.cgPath
+        
     }
     
-    private func reveal(layer: CAShapeLayer) {
+    func reveal(layer: CAShapeLayer) {
         let stroke = CABasicAnimation(keyPath: "strokeEnd")
         stroke.fromValue = 0.0
         stroke.toValue = 1.0
@@ -182,7 +194,7 @@ class BatteryIndicator: UIView {
         fade.fillMode = CAMediaTimingFillMode.forwards
         fade.isRemovedOnCompletion = false
         batteryTerminal.add(fade, forKey: nil)
+        
     }
-    
     
 }
