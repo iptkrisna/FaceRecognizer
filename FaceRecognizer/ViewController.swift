@@ -73,7 +73,6 @@ class ViewController: UIViewController, ARSessionDelegate {
         return true
     }
     
-    
     // MARK: ARSession Delegate
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         if let faceAnchor = anchors.first as? ARFaceAnchor {
@@ -92,14 +91,14 @@ class ViewController: UIViewController, ARSessionDelegate {
         
         switch state {
         case .up:
-            direction = -29
+            direction = -25
         case .down:
-            direction = 29
+            direction = 25
         case .neutral:
             direction = 0
         }
 //        print(Int(playerView.frame.origin.y) + Int(direction))
-        if Int(playerView.frame.origin.y) + Int(direction) >= 100 && Int(playerView.frame.origin.y) + Int(direction) <= 660 {
+        if Int(playerView.frame.origin.y) + Int(direction) >= 210 && Int(playerView.frame.origin.y) + Int(direction) <= 660 {
 
 //            moving = true
 //            print("yesyesyes")
@@ -129,7 +128,7 @@ class ViewController: UIViewController, ARSessionDelegate {
             if counter.count > 10 {
                 counter.remove(at: counter.count-1)
             }
-            view.viewWithTag(counter.count)?.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: CGFloat(Double(counter.count)/10.0))
+            view.viewWithTag(counter.count)?.backgroundColor = UIColor(red: 1, green: 0, blue: 1, alpha: CGFloat(Double(counter.count)/10.0))
         } else {
             view.viewWithTag(counter.popLast() ?? 1)?.backgroundColor = UIColor.clear
         }
@@ -145,42 +144,23 @@ class ViewController: UIViewController, ARSessionDelegate {
         
         if mouthSmile > 0.5 {
             updatePlayer(state: .up)
-//            if smileyImage.layer.frame.width <= 95 {
-//                smileyImage.layer.frame = CGRect(x: 60, y: 250, width: smileyImage.frame.width+5, height: smileyImage.frame.height+5)
-//            }
-//            if blue <= 250 {
-//                blue += 5
-//            }
-//            if red >= 5 {
-//                red -= 5
-//            }
-//            playerView.alpha -= 0.1
-            if playerView.alpha <= 0.9 {
-                playerView.alpha += 0.1
-            }
-            if view.alpha <= 0.9 {
-                view.alpha += 0.1
-            }
+
         } else if mouthSmile < 0.1 {
             updatePlayer(state: .down)
-//            if smileyImage.layer.frame.width >= 15 {
-//                smileyImage.layer.frame = CGRect(x: 60, y: 250, width: smileyImage.frame.width-5, height: smileyImage.frame.height-5)
-//            }
-//            if red <= 250 {
-//                red += 5
-//            }
-//            if blue >= 5 {
-//                blue -= 5
-//            }
-//            self.playerView.backgroundColor = UIColor(red: red/255, green: green/255, blue: blue/255, alpha: 1)
-            if playerView.alpha >= 0.5 {
-                playerView.alpha -= 0.1
-            }
-            if view.alpha >= 0.5 {
-                view.alpha -= 0.1
-            }
+
         } else {
             updatePlayer(state: .neutral)
+        }
+        
+        guard let browInnerUp = bledShapes[.browInnerUp] as? Float else {return}
+        print(browInnerUp)
+        
+        if browInnerUp > 0.5 {
+            view.alpha = 1
+        } else if browInnerUp < 0.1 {
+            view.alpha = 0.2
+        } else {
+            view.alpha = 0.6
         }
         
     }
