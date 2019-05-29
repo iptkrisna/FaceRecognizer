@@ -13,16 +13,15 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
 
     var session: ARSession!
     var timer: Timer!
-    var timer1: Timer!
+    var batteryCharged: Int = 0
     let borderColor = UIColor.white
     enum PlayerState:String {
-        case neutral = "Neutral"
-        case up = "Up"
-        case down = "Down"
+        case neutral
+        case up
+        case down
         
     }
     
-    @IBOutlet weak var batteryIndicator: BatteryIndicator!
     @IBOutlet weak var precentLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var borderImage: UIView!
@@ -36,31 +35,30 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
         session = ARSession()
         session.delegate = self
         
-//        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(counterProcess), userInfo: nil, repeats: true)
-        timer1 = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(animateText), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(animateText), userInfo: nil, repeats: true)
         view.backgroundColor = UIColor(patternImage: UIImage(named: "calm")!)
         
-        batteryIndicator.precentCharged = 32
-        batteryIndicator.animatedReveal = true
-        batteryIndicator.isHidden = true
+        batteryCharged = 32
         
         calmNight.backgroundColor = UIColor(patternImage: UIImage(named: "background")!)
-        calmNight.alpha = CGFloat(batteryIndicator.precentCharged/100)
+        calmNight.alpha = CGFloat(batteryCharged/100)
         
-        precentLabel.text = "\(Int(batteryIndicator.precentCharged))%"
+        precentLabel.text = "\(Int(batteryCharged))%"
         precentLabel.layer.zPosition = 1
         backgroundPrecent.layer.cornerRadius = backgroundPrecent.frame.width/2
         backgroundPrecent.layer.shadowColor = UIColor.white.cgColor
         backgroundPrecent.layer.shadowOpacity = 1
         backgroundPrecent.layer.shadowOffset = .zero
-        backgroundPrecent.layer.shadowRadius = CGFloat(batteryIndicator.precentCharged/3)
+        backgroundPrecent.layer.shadowRadius = CGFloat(batteryCharged/3)
         
         imageView.transform = CGAffineTransform(rotationAngle: 45/360)
         askSmileLabel.layer.masksToBounds = true
         askSmileLabel.layer.cornerRadius = 10
+        askSmileLabel.layer.borderColor = UIColor.red.cgColor
+        askSmileLabel.layer.borderWidth = 5
+        askSmileLabel.textColor = UIColor.red
         askSmileLabel.alpha = 0.1
         askSmileLabel.isHidden = true
-//        faceDetect.isHidden = true
         
         borderImage.layer.masksToBounds = true
         borderImage.backgroundColor = UIColor.clear
@@ -68,7 +66,9 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
         borderImage.layer.shadowColor = UIColor.white.cgColor
         borderImage.layer.shadowOpacity = 1
         borderImage.layer.shadowOffset = .zero
-        borderImage.layer.shadowRadius = CGFloat(batteryIndicator.precentCharged/3)
+        borderImage.layer.shadowRadius = CGFloat(batteryCharged/3)
+        
+        print(CGFloat.pi)
         
     }
     
@@ -81,10 +81,10 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        animateText()
-
-    }
+//    override func viewDidAppear(_ animated: Bool) {
+//        animateText()
+//
+//    }
     
     override var shouldAutorotate: Bool {
         return true
@@ -107,22 +107,13 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
         
     }
     
-    @objc func counterProcess() {
+    @objc func askSmile(state: Bool) {
         UIView.transition(with: askSmileLabel,
                           duration: 0.5,
                           options: .transitionCrossDissolve,
-                          animations: { self.askSmileLabel.text = "Smile!!!" },
+                          animations: { self.askSmileLabel.isHidden = state },
                           completion: nil)
-        
-    }
-    
-    @objc func moonSmile() {
-        UIView.transition(with: askSmileLabel,
-                          duration: 0.5,
-                          options: .transitionCrossDissolve,
-                          animations: { self.askSmileLabel.text = "Smile!!!" },
-                          completion: nil)
-        
+
     }
     
     @objc func animateText() {
@@ -134,15 +125,10 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
                        animations: {
                         self.imageView.transform = CGAffineTransform(translationX: 0, y: 10)
                         self.askSmileLabel.alpha = 1
-                        self.askSmileLabel.transform = CGAffineTransform(scaleX: 1.7, y: 1.7)
+                        self.askSmileLabel.transform = CGAffineTransform(rotationAngle: CGFloat.pi/12)
                         
         },
                        completion: nil)
-        
-    }
-    
-    @objc func randomAskSmile() {
-        self.askSmileLabel.layer.frame = CGRect(x: CGFloat.random(in: 8...279), y: CGFloat.random(in: 52...808), width: 127, height: 46)
         
     }
 
@@ -161,28 +147,34 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
     
     func movePlayer (state:PlayerState) {
         
-        var direction: Double = 0
+        var direction: Int = 0
         
         switch state {
         case .up:
-            direction = 0.25
+            direction = 1
         case .down:
-            direction = -0.25
+            direction = -1
         case .neutral:
             direction = 0
             
         }
 
-        if batteryIndicator.precentCharged + direction <= 100 && batteryIndicator.precentCharged + direction >= 0 {
-            batteryIndicator.precentCharged += direction
-            precentLabel.text = "\(Int(batteryIndicator.precentCharged + 0.5))%"
-            borderImage.layer.shadowRadius = CGFloat(batteryIndicator.precentCharged/3)
-            calmNight.alpha = CGFloat(batteryIndicator.precentCharged/100)
-            print(batteryIndicator.precentCharged)
+        if batteryCharged <= 99 && batteryCharged + direction >= 0 {
+            batteryCharged += direction
+            precentLabel.text = "\(batteryCharged)%"
+            borderImage.layer.shadowRadius = CGFloat(Double(batteryCharged)/3)
+            calmNight.alpha = CGFloat(Double(batteryCharged)/100)
+            print(batteryCharged)
             
+        } else if batteryCharged > 99 {
+            timer.invalidate()
+            askSmileLabel.alpha = 0
+            session.pause()
+            performSegue(withIdentifier: "playGame", sender: self)
+
         }
         
-        if batteryIndicator.precentCharged >= 50 {
+        if batteryCharged >= 20 && state == .up {
             if imageView.image != UIImage(named: "smilee") {
                 UIView.transition(with: imageView,
                                   duration: 1,
@@ -191,9 +183,8 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
                                   completion: nil)
                 
             }
-//            backgroundPrecent.backgroundColor = UIColor.green
 
-        } else if batteryIndicator.precentCharged >= 20 {
+        } else if batteryCharged >= 20 && state == .down {
             if imageView.image != UIImage(named: "flat") {
                 UIView.transition(with: imageView,
                                   duration: 1,
@@ -202,10 +193,8 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
                                   completion: nil)
                 
             }
-            askSmileLabel.isHidden = true
-//            backgroundPrecent.backgroundColor = UIColor.yellow
 
-        } else {
+        } else if batteryCharged < 20 {
             if imageView.image != UIImage(named: "sadd") {
                 UIView.transition(with: imageView,
                                   duration: 1,
@@ -214,11 +203,6 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
                                   completion: nil)
                 
             }
-            if batteryIndicator.precentCharged == 0 {
-                askSmileLabel.isHidden = false
-                
-            }
-//            backgroundPrecent.backgroundColor = UIColor.red
 
         }
         
@@ -228,20 +212,19 @@ class ChargeViewController: UIViewController, ARSessionDelegate {
         var bledShapes:[ARFaceAnchor.BlendShapeLocation:Any] = faceAnchor.blendShapes
         
         guard let mouthSmile = bledShapes[.mouthSmileLeft] as? Float else {return}
-        guard let browInnerUp = bledShapes[.browInnerUp] as? Float else {return}
 
         print(mouthSmile)
         
-        if mouthSmile > 0.5 || browInnerUp > 0.5{
+        if mouthSmile > 0.5 {
             updatePlayer(state: .up)
+            askSmile(state: true)
             
-        } else if mouthSmile < 0.05 || browInnerUp < 0.2{
+        } else if mouthSmile < 0.05 {
             updatePlayer(state: .down)
-//            faceDetect.isHidden = true
+            askSmile(state: false)
             
         } else {
             updatePlayer(state: .neutral)
-//            faceDetect.isHidden = false
             
         }
 
